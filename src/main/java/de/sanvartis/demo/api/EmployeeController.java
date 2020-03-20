@@ -68,6 +68,6 @@ public class EmployeeController {
 
     @GetMapping("testAzure")
     private String testAzure (){
-        return "hello phoenix-its ";
+        return "hello phoenix-its sfax ";
     }
 }
