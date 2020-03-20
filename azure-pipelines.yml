@@ -1,23 +1,28 @@
-# Gradle
-# Build your Java project and run tests with Gradle using a Gradle wrapper script.
+# Maven
+# Build your Java project and run tests with Apache Maven.
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
 trigger:
-- master
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - api/*
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'Ubuntu 16.04'
 
 steps:
-- task: Gradle@2
-  inputs:
-    workingDirectory: ''
-    gradleWrapperFile: 'gradlew'
-    gradleOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/TEST-*.xml'
-    tasks: 'build'
+- script: |
+    docker build -t $(acrLoginServer)/dockerImagesTestAzure .
+  workingDirectory: api/
+  displayName: 'Docker Test, Build and Package'
+- script: |
+    docker login $(ACR_USERNAME ) -u phoneix -p 10252566a
+  displayName: 'Docker Login'
+- script: |
+    docker push $(acrLoginServer)/$ACR_CONTAINER_TAG
+  displayName: 'Docker Push'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
